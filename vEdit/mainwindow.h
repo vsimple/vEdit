@@ -14,6 +14,7 @@
 #include <QWidget>
 #include <QSplitter>
 #include <QTabWidget>
+#include "codeeditor.h"
 
 namespace Ui {
 class MainWindow;
@@ -50,10 +51,16 @@ private:
 
     // 中间：代码编辑器
     QTextEdit *textEdit;
-    QTabWidget *tabWidget;
+    CodeEditor *codeeditor;
+    QTabWidget *tabWidgetTop, *tabWidgetDown;
+
+    static int numTabTop;
+
 
 private slots:
+    void newFile();
     void openFile();
+    void tabCloseTop(int);
 };
 
 #endif // MAINWINDOW_H

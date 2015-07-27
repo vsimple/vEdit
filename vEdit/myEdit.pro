@@ -15,11 +15,13 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     taba.cpp \
-    tabb.cpp
+    tabb.cpp \
+    codeeditor.cpp
 
 HEADERS  += mainwindow.h \
     taba.h \
-    tabb.h
+    tabb.h \
+    codeeditor.h
 
 FORMS    += mainwindow.ui
 

@@ -9,6 +9,8 @@
 #include "taba.h"
 #include "tabb.h"
 
+int MainWindow::numTabTop = 0;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -23,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent) :
     newAction = new QAction(QIcon(":/images/new"), tr("新建"), this);
     newAction->setShortcut(QKeySequence::New);
     newAction->setStatusTip(tr("新建文件"));
+    connect(newAction, SIGNAL(triggered(bool)), this, SLOT(newFile()));
 
     openAction = new QAction(QIcon(":/images/open"), tr("打开"), this);
     openAction->setShortcut(QKeySequence::Open);
@@ -89,14 +92,20 @@ MainWindow::MainWindow(QWidget *parent) :
     treeViewLeft->setModel(modelLeft);
 
     // 中间布局 代码编辑器
-    textEdit = new QTextEdit(this);
-    textEdit->setText("我是第一行<br/>我是第二行");
+    //textEdit = new QTextEdit(this);
+    //textEdit->setText("我是第一行<br/>我是第二行");
+    //codeeditor = new CodeEditor(this);
 
-    tabWidget = new QTabWidget(this);
-    tabA *tab1 = new tabA(tabWidget);
-    tabB *tab2 = new tabB(tabWidget);
-    tabWidget->addTab(tab1, "A栏目");
-    tabWidget->addTab(tab2, "B栏目");
+    tabWidgetTop = new QTabWidget(this);
+    tabWidgetTop->setTabsClosable(true);
+    tabWidgetTop->setTabShape(QTabWidget::Rounded);
+    connect(tabWidgetTop, SIGNAL(tabCloseRequested(int)), this, SLOT(tabCloseTop(int)));
+
+    tabWidgetDown = new QTabWidget(this);
+    tabA *tab1 = new tabA(tabWidgetDown);
+    tabB *tab2 = new tabB(tabWidgetDown);
+    tabWidgetDown->addTab(tab1, "A栏目");
+    tabWidgetDown->addTab(tab2, "B栏目");
 
     // 右边布局
     treeViewRight = new QTreeView(this);
@@ -129,19 +138,60 @@ MainWindow::MainWindow(QWidget *parent) :
     splitterMain = new QSplitter(Qt::Horizontal, this);
     splitterMain->addWidget(treeViewLeft);
     splitterMiddle = new QSplitter(Qt::Vertical, splitterMain);
-    splitterMiddle->addWidget(textEdit);
-    splitterMiddle->addWidget(tabWidget);
-    splitterMiddle->setStretchFactor(0, 1);
-    splitterMiddle->setStretchFactor(1, 3);
+    //splitterMiddle->addWidget(codeeditor);
+    splitterMiddle->addWidget(tabWidgetTop);
+    splitterMiddle->addWidget(tabWidgetDown);
+    splitterMiddle->setStretchFactor(0, 8);
+    splitterMiddle->setStretchFactor(1, 1);
     splitterMain->addWidget(treeViewRight);
     splitterMain->setStretchFactor(0, 1);
-    splitterMain->setStretchFactor(1, 4);
+    splitterMain->setStretchFactor(1, 6);
     splitterMain->setStretchFactor(2, 1);
 
     setCentralWidget(splitterMain);
     //widget = new QWidget();
     //widget->setLayout(splitterMain);
     //this->setCentralWidget(widget);
+}
+
+void MainWindow::newFile()
+{
+    QString tabName("Untitled");
+    tabName = tabName + QString::number(numTabTop, 10);
+
+    CodeEditor *editorNew = new CodeEditor(tabWidgetTop);
+    tabWidgetTop->addTab(editorNew, tabName);
+    connect(editorNew, SIGNAL(textChanged()), editorNew, SLOT(textTopChangeTag()));
+    numTabTop++;
+}
+
+
+void MainWindow::tabCloseTop(int index)
+{
+    CodeEditor *temp = qobject_cast<CodeEditor*>(tabWidgetTop->widget(index));
+    QString s = temp->toPlainText();
+    if(s != "" && temp->everChanged == 1)
+    {
+        if(QMessageBox::Yes == QMessageBox::question(this,
+                                                 tr("保存文件"),
+                                                 tr("内容被修改\n确定要保存？"),
+                                                 QMessageBox::Yes | QMessageBox::No,
+                                                 QMessageBox::Yes))
+        {
+            tabWidgetTop->setTabText(index, "Hello");
+
+
+        }
+        else
+        {
+            tabWidgetTop->removeTab(index);
+        }
+    }
+    else
+    {
+        tabWidgetTop->removeTab(index);
+    }
+
 }
 
 void MainWindow::openFile()
