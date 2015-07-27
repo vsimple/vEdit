@@ -32,6 +32,7 @@ class QWidget;
 class QSplitter;
 class QTabWidget;
 class CodeEditor;
+class QStandardItem;
 
 namespace Ui {
 class MainWindow;
@@ -67,6 +68,7 @@ private:
     // 左边：树形视图
     QTreeView *treeViewLeft, *treeViewRight;
     QStandardItemModel *modelLeft, *modelRight;
+    QStandardItem *topItemLeft;
 
     // 中间：代码编辑器
     QTextEdit *textEdit;
@@ -83,6 +85,7 @@ private slots:
     void saveFile();
     void saveAsFile();
     void tabCloseTop(int);
+    void changeTab();
 };
 
 #endif // MAINWINDOW_H

@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include <QDebug>
 
 #include <QAction>
 #include <QMenuBar>
@@ -111,15 +112,13 @@ MainWindow::MainWindow(QWidget *parent) :
     modelLeft = new QStandardItemModel(1, 1);
     modelLeft->setHeaderData(0, Qt::Horizontal, "工程");
 
-    QStandardItem *item1 = new QStandardItem("计算机");
-    item1->setIcon(QIcon(":images/home"));
+    topItemLeft = new QStandardItem("计算机");
+    topItemLeft->setIcon(QIcon(":images/home"));
 
-    QStandardItem *item2 = new QStandardItem("编译原理");
-    item2->setIcon(QIcon(":images/right"));
-
-    item1->appendRow(item2);
-    modelLeft->setItem(0, 0, item1);
+    modelLeft->setItem(0, 0, topItemLeft);
     treeViewLeft->setModel(modelLeft);
+
+    connect(treeViewLeft, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(changeTab()));
 
     // 中间布局 代码编辑器
     //textEdit = new QTextEdit(this);
@@ -152,6 +151,7 @@ MainWindow::MainWindow(QWidget *parent) :
     item3->appendRow(item4);
     modelRight->setItem(0, 0, item3);
     treeViewRight->setModel(modelRight);
+
 
     //
     /*
@@ -263,21 +263,39 @@ void MainWindow::tabCloseTop(int index)
         else if( r == QMessageBox::No)
         {
             tabWidgetTop->removeTab(index);
+            numTabTop--;
         }
     }
     else
     {
         tabWidgetTop->removeTab(index);
+        numTabTop--;
     }
 
 }
 
 void MainWindow::openFile()
 {
-    QString fileName = QFileDialog::getOpenFileName(this, "open file", "/", "C file(*.c);;test file(*.txt);;C++ file(*.cpp);;All file(*.*)");
+    QString fileName = QFileDialog::getOpenFileName(this, "open file", "/codefiles/cpp", "C file(*.c);;test file(*.txt);;C++ file(*.cpp);;All file(*.*)");
     if(!fileName.isEmpty())
     {
         newTab = 1;
+
+
+        // 添加目录
+
+        QString path = fileName.section('/', -2);
+        QString name = fileName.section('/', -1);
+        QString project = path.left(path.size() - name.size() - 1);
+        QStandardItem *itemFile = new QStandardItem(name);
+        QStandardItem *itemProject = new QStandardItem(project);
+        itemFile->setIcon(QIcon(":/images/right"));
+        itemProject->setIcon(QIcon(":/images/down"));
+        itemFile->setEditable(false);
+        itemProject->setEditable(false);
+
+        itemProject->appendRow(itemFile);
+        topItemLeft->appendRow(itemProject);
         //int position = fileName.lastIndexOf('/');
         //QString tabName = fileName.right(fileName.size() - position - 1);
 
@@ -290,7 +308,7 @@ void MainWindow::openFile()
         editorNew->setFont(font);
 
         new Highlighter(editorNew->document());
-        tabWidgetTop->addTab(editorNew, fileName);
+        tabWidgetTop->addTab(editorNew, name);
 
         QFile file(fileName);
         if (!file.open(QIODevice::ReadWrite))
@@ -301,8 +319,18 @@ void MainWindow::openFile()
              editorNew->setPlainText(out.readAll());
         }
 
+        tabWidgetTop->setCurrentIndex(numTabTop);
+        numTabTop++;
 
     }
+}
+
+void MainWindow::changeTab()
+{
+    QStandardItemModel* model = static_cast<QStandardItemModel*>(treeViewLeft->model());
+    QModelIndex index = treeViewLeft->currentIndex();
+    QStandardItem* item = model->itemFromIndex(index);
+    tabWidgetTop->setCurrentIndex(item->parent()->row());
 }
 
 MainWindow::~MainWindow()

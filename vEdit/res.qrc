@@ -10,5 +10,6 @@
         <file alias="vsimple">images/vsimple.png</file>
         <file alias="save">images/filesave.png</file>
         <file alias="saveAs">images/gtk-save-as.png</file>
+        <file alias="down">images/down.png</file>
     </qresource>
 </RCC>
