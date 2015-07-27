@@ -16,12 +16,14 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     taba.cpp \
     tabb.cpp \
-    codeeditor.cpp
+    codeeditor.cpp \
+    highlighter.cpp
 
 HEADERS  += mainwindow.h \
     taba.h \
     tabb.h \
-    codeeditor.h
+    codeeditor.h \
+    highlighter.h
 
 FORMS    += mainwindow.ui
 

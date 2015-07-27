@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+/*
 #include <QMainWindow>
 #include <QAction>
 #include <QMenuBar>
@@ -15,6 +16,22 @@
 #include <QSplitter>
 #include <QTabWidget>
 #include "codeeditor.h"
+*/
+
+#include <QMainWindow>
+class QAction;
+class QMenuBar;
+class QMenu;
+class QToolBar;
+class QVBoxLayout;
+class QHBoxLayout;
+class QTreeView;
+class QStandardItemModel;
+class QTextEdit;
+class QWidget;
+class QSplitter;
+class QTabWidget;
+class CodeEditor;
 
 namespace Ui {
 class MainWindow;
@@ -35,6 +52,8 @@ private:
     QToolBar *fileToolBar, *editToolBar, *helpToolBar;
     QAction *newAction;
     QAction *openAction;
+    QAction *saveAction;
+    QAction *saveAsAction;
     QAction *cutAction;
     QAction *pasteAction;
     QAction *aboutAction;
@@ -53,6 +72,7 @@ private:
     QTextEdit *textEdit;
     CodeEditor *codeeditor;
     QTabWidget *tabWidgetTop, *tabWidgetDown;
+    int newTab;
 
     static int numTabTop;
 
@@ -60,6 +80,8 @@ private:
 private slots:
     void newFile();
     void openFile();
+    void saveFile();
+    void saveAsFile();
     void tabCloseTop(int);
 };
 

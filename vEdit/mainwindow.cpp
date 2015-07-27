@@ -1,6 +1,22 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include <QAction>
+#include <QMenuBar>
+#include <QMenu>
+#include <QToolBar>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
+#include <QTreeView>
+#include <QStandardItemModel>
+#include <QTextEdit>
+#include <QWidget>
+#include <QSplitter>
+#include <QTabWidget>
+#include "codeeditor.h"
+#include <QTextStream>
+#include <QFile>
+
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QStandardItem>
@@ -8,6 +24,7 @@
 #include <QWidget>
 #include "taba.h"
 #include "tabb.h"
+#include "highlighter.h"
 
 int MainWindow::numTabTop = 0;
 
@@ -32,6 +49,16 @@ MainWindow::MainWindow(QWidget *parent) :
     openAction->setStatusTip(tr("打开文件"));
     connect(openAction, SIGNAL(triggered(bool)), this, SLOT(openFile()));
 
+    saveAction = new QAction(QIcon(":/images/save"), tr("保存"), this);
+    saveAction->setShortcut(QKeySequence::Save);
+    saveAction->setStatusTip(tr("保存文件"));
+    connect(saveAction, SIGNAL(triggered(bool)), this, SLOT(saveFile()));
+
+    saveAsAction = new QAction(QIcon(":/images/saveAs"), tr("另存为"), this);
+    saveAsAction->setShortcut(QKeySequence::SaveAs);
+    saveAsAction->setStatusTip(tr("另存为文件"));
+    connect(saveAsAction, SIGNAL(triggered(bool)), this, SLOT(saveAsFile()));
+
     cutAction = new QAction(QIcon(":/images/cut"), tr("剪切"), this);
     cutAction->setShortcut(QKeySequence::Cut);
     cutAction->setStatusTip(tr("剪切内容"));
@@ -48,6 +75,8 @@ MainWindow::MainWindow(QWidget *parent) :
     fileMenu = menuBar()->addMenu(tr("文件"));
     fileMenu->addAction(newAction);
     fileMenu->addAction(openAction);
+    fileMenu->addAction(saveAction);
+    fileMenu->addAction(saveAsAction);
     fileMenu->addSeparator();
 
     editMenu = menuBar()->addMenu(tr("编辑"));
@@ -62,6 +91,7 @@ MainWindow::MainWindow(QWidget *parent) :
     fileToolBar = addToolBar(tr("新建"));
     fileToolBar->addAction(newAction);
     fileToolBar->addAction(openAction);
+    fileToolBar->addAction(saveAction);
 
     editToolBar = addToolBar(tr("修改"));
     editToolBar->addAction(cutAction);
@@ -96,6 +126,7 @@ MainWindow::MainWindow(QWidget *parent) :
     //textEdit->setText("我是第一行<br/>我是第二行");
     //codeeditor = new CodeEditor(this);
 
+    newTab = 0;
     tabWidgetTop = new QTabWidget(this);
     tabWidgetTop->setTabsClosable(true);
     tabWidgetTop->setTabShape(QTabWidget::Rounded);
@@ -156,15 +187,63 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::newFile()
 {
+    newTab = 0;
     QString tabName("Untitled");
     tabName = tabName + QString::number(numTabTop, 10);
 
+    QFont font;
+    font.setFamily("Courier");
+    font.setFixedPitch(true);
+    font.setPointSize(11);
+
     CodeEditor *editorNew = new CodeEditor(tabWidgetTop);
+    editorNew->setFont(font);
+    new Highlighter(editorNew->document());
     tabWidgetTop->addTab(editorNew, tabName);
     connect(editorNew, SIGNAL(textChanged()), editorNew, SLOT(textTopChangeTag()));
     numTabTop++;
 }
 
+void MainWindow::saveFile()
+{
+    if(!newTab)
+    {
+        newTab = 1;
+        saveAsFile();
+    }
+    else
+    {
+        int index = tabWidgetTop->currentIndex();
+        CodeEditor *temp = qobject_cast<CodeEditor*>(tabWidgetTop->widget(index));
+        QString fileName = tabWidgetTop->tabText(index);
+
+        QFile file(fileName);
+        if(!file.open(QFile::WriteOnly | QFile::Text))
+        {
+            return;
+        }
+        QTextStream out(&file);
+        out << temp->toPlainText();
+        temp->everChanged = 0;
+    }
+}
+
+void MainWindow::saveAsFile()
+{
+    int index = tabWidgetTop->currentIndex();
+    CodeEditor *temp = qobject_cast<CodeEditor*>(tabWidgetTop->widget(index));
+    QString fileName = QFileDialog::getSaveFileName(this,tr("保存为"),tr("未命名.c"), tr("test file(*.txt);;C file(*.c);"));
+    QFile file(fileName);
+    if(!file.open(QFile::WriteOnly | QFile::Text))
+    {
+        return;
+    }
+    QTextStream out(&file);
+    out << temp->toPlainText();
+    tabWidgetTop->setTabText(index, fileName);
+    temp->everChanged = 0;
+
+}
 
 void MainWindow::tabCloseTop(int index)
 {
@@ -172,17 +251,16 @@ void MainWindow::tabCloseTop(int index)
     QString s = temp->toPlainText();
     if(s != "" && temp->everChanged == 1)
     {
-        if(QMessageBox::Yes == QMessageBox::question(this,
-                                                 tr("保存文件"),
-                                                 tr("内容被修改\n确定要保存？"),
-                                                 QMessageBox::Yes | QMessageBox::No,
-                                                 QMessageBox::Yes))
+        int r = QMessageBox::warning(this,
+                                     tr("保存文件"),
+                                     tr("内容被修改\n是否要保存？"),
+                                     QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel,
+                                     QMessageBox::Yes);
+        if( r == QMessageBox::Yes)
         {
-            tabWidgetTop->setTabText(index, "Hello");
-
-
+            saveFile();
         }
-        else
+        else if( r == QMessageBox::No)
         {
             tabWidgetTop->removeTab(index);
         }
@@ -196,7 +274,35 @@ void MainWindow::tabCloseTop(int index)
 
 void MainWindow::openFile()
 {
-    QFileDialog::getOpenFileName(this, "open file", "/", "test file(*.txt);;C file(*.cpp);;All file(*.*)");
+    QString fileName = QFileDialog::getOpenFileName(this, "open file", "/", "C file(*.c);;test file(*.txt);;C++ file(*.cpp);;All file(*.*)");
+    if(!fileName.isEmpty())
+    {
+        newTab = 1;
+        //int position = fileName.lastIndexOf('/');
+        //QString tabName = fileName.right(fileName.size() - position - 1);
+
+        QFont font;
+        font.setFamily("Courier");
+        font.setFixedPitch(true);
+        font.setPointSize(11);
+
+        CodeEditor *editorNew = new CodeEditor(tabWidgetTop);
+        editorNew->setFont(font);
+
+        new Highlighter(editorNew->document());
+        tabWidgetTop->addTab(editorNew, fileName);
+
+        QFile file(fileName);
+        if (!file.open(QIODevice::ReadWrite))
+            return;
+        QTextStream out(&file);
+        while(!file.atEnd())
+        {
+             editorNew->setPlainText(out.readAll());
+        }
+
+
+    }
 }
 
 MainWindow::~MainWindow()
