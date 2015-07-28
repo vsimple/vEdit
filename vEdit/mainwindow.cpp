@@ -38,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent) :
     fileMenu = new QMenu(this);
     editMenu = new QMenu(this);
     helpMenu = new QMenu(this);
+    recentMenu = new QMenu(fileMenu);
 
     // 填充菜单子节点
     newAction = new QAction(QIcon(":/images/new"), tr("新建"), this);
@@ -79,6 +80,8 @@ MainWindow::MainWindow(QWidget *parent) :
     fileMenu->addAction(saveAction);
     fileMenu->addAction(saveAsAction);
     fileMenu->addSeparator();
+    subMenu();
+
 
     editMenu = menuBar()->addMenu(tr("编辑"));
     editMenu->addAction(cutAction);
@@ -322,6 +325,25 @@ void MainWindow::openFile()
         tabWidgetTop->setCurrentIndex(numTabTop);
         numTabTop++;
 
+
+        QString pathFile = "D:\\vEdit.txt";
+        QString str;
+        QFile filePath(pathFile);
+        if (filePath.open(QIODevice::ReadWrite))
+        {
+            int exist = 0;
+            QTextStream out(&filePath);
+            while(!out.atEnd())
+            {
+                str = out.readLine();
+                if(str == fileName)
+                    exist = 1;
+            }
+            if( !exist )
+                out << '\n' << fileName;
+            file.close();
+        }
+
     }
 }
 
@@ -331,6 +353,32 @@ void MainWindow::changeTab()
     QModelIndex index = treeViewLeft->currentIndex();
     QStandardItem* item = model->itemFromIndex(index);
     tabWidgetTop->setCurrentIndex(item->parent()->row());
+}
+
+void MainWindow::subMenu()
+{
+    recentMenu->setTitle(tr("最近打开"));
+
+    QString path = "D:\\vEdit.txt";
+    QString str;
+    QFile file(path);
+    if (file.open(QIODevice::ReadWrite))
+    {
+        int i = 1;
+        QTextStream out(&file);
+        while(!out.atEnd())
+        {
+            str = out.readLine();
+            QAction *temp = new QAction(QIcon(":/images/add"), QString("%1 %2").arg(i).arg(str), this);
+            temp->setStatusTip(str);
+            recentMenu->addAction(temp);
+            i++;
+        }
+        file.close();
+    }
+
+    fileMenu->addMenu(recentMenu);
+
 }
 
 MainWindow::~MainWindow()

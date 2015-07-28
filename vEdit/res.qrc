@@ -11,5 +11,6 @@
         <file alias="save">images/filesave.png</file>
         <file alias="saveAs">images/gtk-save-as.png</file>
         <file alias="down">images/down.png</file>
+        <file alias="add">images/add.png</file>
     </qresource>
 </RCC>

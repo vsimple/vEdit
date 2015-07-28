@@ -50,6 +50,7 @@ private:
     Ui::MainWindow *ui;
     // 菜单栏、工具栏
     QMenu *fileMenu, *editMenu, *helpMenu;
+    QMenu *recentMenu;
     QToolBar *fileToolBar, *editToolBar, *helpToolBar;
     QAction *newAction;
     QAction *openAction;
@@ -77,6 +78,9 @@ private:
     int newTab;
 
     static int numTabTop;
+
+private:
+    void subMenu();
 
 
 private slots:
