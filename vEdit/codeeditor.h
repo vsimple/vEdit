@@ -3,6 +3,8 @@
 
 #include <QPlainTextEdit>
 #include <QObject>
+#include "windowtofind.h"
+#include "windowtoreplace.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -30,9 +32,14 @@ private slots:
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
     void textTopChangeTag();
+    void findWindow();
+    void replaceWindow();
 
 private:
     QWidget *lineNumberArea;
+    WindowToFind *find;
+    WindowToReplace *replace;
+
 
 public:
     int everChanged;

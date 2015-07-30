@@ -17,15 +17,21 @@ SOURCES += main.cpp\
     taba.cpp \
     tabb.cpp \
     codeeditor.cpp \
-    highlighter.cpp
+    highlighter.cpp \
+    windowtofind.cpp \
+    windowtoreplace.cpp
 
 HEADERS  += mainwindow.h \
     taba.h \
     tabb.h \
     codeeditor.h \
-    highlighter.h
+    highlighter.h \
+    windowtofind.h \
+    windowtoreplace.h
 
-FORMS    += mainwindow.ui
+FORMS    += mainwindow.ui \
+    windowtofind.ui \
+    windowtoreplace.ui
 
 RESOURCES += \
     res.qrc

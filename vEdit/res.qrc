@@ -12,5 +12,12 @@
         <file alias="saveAs">images/gtk-save-as.png</file>
         <file alias="down">images/down.png</file>
         <file alias="add">images/add.png</file>
+        <file alias="redo">images/stock_redo.png</file>
+        <file alias="undo">images/stock_undo.png</file>
+        <file alias="run">images/system-log-out.png</file>
+        <file alias="compile">images/system-run.png</file>
+        <file alias="find">images/gtk-find.png</file>
+        <file alias="replace">images/gtk-find-and-replace.png</file>
+        <file alias="clear">images/editclear.png</file>
     </qresource>
 </RCC>

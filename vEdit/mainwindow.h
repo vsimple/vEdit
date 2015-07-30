@@ -19,6 +19,7 @@
 */
 
 #include <QMainWindow>
+
 class QAction;
 class QMenuBar;
 class QMenu;
@@ -49,16 +50,23 @@ public:
 private:
     Ui::MainWindow *ui;
     // 菜单栏、工具栏
-    QMenu *fileMenu, *editMenu, *helpMenu;
+    QMenu *fileMenu, *editMenu, *searchMenu, *buildMenu, *helpMenu;
     QMenu *recentMenu;
-    QToolBar *fileToolBar, *editToolBar, *helpToolBar;
+    QToolBar *fileToolBar, *editToolBar, *searchToolBar, *buildToolBar, *helpToolBar;
     QAction *newAction;
     QAction *openAction;
     QAction *saveAction;
     QAction *saveAsAction;
     QAction *cutAction;
     QAction *pasteAction;
+    QAction *undoAction;
+    QAction *redoAction;
+    QAction *findAction;
+    QAction *replaceAction;
+    QAction *compileAction;
+    QAction *runAction;
     QAction *aboutAction;
+
     // 布局
     QWidget *widget;
     QVBoxLayout *vboxLeft, *vboxMiddle, *vboxRight;
@@ -82,7 +90,6 @@ private:
 private:
     void subMenu();
 
-
 private slots:
     void newFile();
     void openFile();
@@ -90,6 +97,7 @@ private slots:
     void saveAsFile();
     void tabCloseTop(int);
     void changeTab();
+
 };
 
 #endif // MAINWINDOW_H

@@ -115,3 +115,17 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
     }
 }
 
+void CodeEditor::findWindow()
+{
+    find = new WindowToFind(this);
+    //find->setWindowModality(Qt::WindowModal);
+    find->show();
+}
+
+void CodeEditor::replaceWindow()
+{
+    replace = new WindowToReplace(this);
+    replace->setWindowModality(Qt::WindowModal);
+    replace->show();
+}
+

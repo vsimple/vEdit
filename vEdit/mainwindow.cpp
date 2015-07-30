@@ -37,6 +37,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // 菜单实例
     fileMenu = new QMenu(this);
     editMenu = new QMenu(this);
+    searchMenu = new QMenu(this);
+    buildMenu = new QMenu(this);
     helpMenu = new QMenu(this);
     recentMenu = new QMenu(fileMenu);
 
@@ -69,6 +71,30 @@ MainWindow::MainWindow(QWidget *parent) :
     pasteAction->setShortcut(QKeySequence::Paste);
     pasteAction->setStatusTip(tr("粘贴内容"));
 
+    undoAction = new QAction(QIcon(":/images/undo"), tr("撤销"), this);
+    undoAction->setShortcut(QKeySequence::Undo);
+    undoAction->setStatusTip(tr("撤销内容"));
+
+    redoAction = new QAction(QIcon(":/images/redo"), tr("重做"), this);
+    redoAction->setShortcut(QKeySequence::Redo);
+    redoAction->setStatusTip(tr("重做内容"));
+
+    findAction = new QAction(QIcon(":/images/find"), tr("查找"), this);
+    // runAction->setShortcut("Ctrl+f8");
+    findAction->setStatusTip(tr("查找内容"));
+
+    replaceAction = new QAction(QIcon(":/images/replace"), tr("替换"), this);
+    // runAction->setShortcut("Ctrl+f8");
+    replaceAction->setStatusTip(tr("替换内容"));
+
+    runAction = new QAction(QIcon(":/images/run"), tr("运行"), this);
+    // runAction->setShortcut("Ctrl+f8");
+    runAction->setStatusTip(tr("运行程序"));
+
+    compileAction = new QAction(QIcon(":/images/compile"), tr("编译"), this);
+    // redoAction->setShortcut("Ctrl+f9");
+    compileAction->setStatusTip(tr("编译程序"));
+
     aboutAction = new QAction(QIcon(":/images/about"), tr("关于"), this);
     aboutAction->setStatusTip(tr("关于信息"));
     connect(aboutAction, SIGNAL(triggered(bool)), qApp, SLOT(aboutQt()));
@@ -76,6 +102,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // 填充菜单
     fileMenu = menuBar()->addMenu(tr("文件"));
     fileMenu->addAction(newAction);
+    fileMenu->addSeparator();
     fileMenu->addAction(openAction);
     fileMenu->addAction(saveAction);
     fileMenu->addAction(saveAsAction);
@@ -84,9 +111,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
     editMenu = menuBar()->addMenu(tr("编辑"));
+    editMenu->addAction(undoAction);
+    editMenu->addAction(redoAction);
+    editMenu->addSeparator();
     editMenu->addAction(cutAction);
     editMenu->addAction(pasteAction);
     editMenu->addSeparator();
+
+    searchMenu = menuBar()->addMenu(tr("搜索"));
+    searchMenu->addAction(findAction);
+    searchMenu->addAction(replaceAction);
+
+    buildMenu = menuBar()->addMenu(tr("构造"));
+    buildMenu->addAction(compileAction);
+    buildMenu->addAction(runAction);
 
     helpMenu = menuBar()->addMenu(tr("帮助"));
     helpMenu->addAction(aboutAction);
@@ -100,6 +138,16 @@ MainWindow::MainWindow(QWidget *parent) :
     editToolBar = addToolBar(tr("修改"));
     editToolBar->addAction(cutAction);
     editToolBar->addAction(pasteAction);
+    editToolBar->addAction(undoAction);
+    editToolBar->addAction(redoAction);
+
+    searchToolBar = addToolBar(tr("搜索"));
+    searchToolBar->addAction(findAction);
+    searchToolBar->addAction(replaceAction);
+
+    buildToolBar = addToolBar(tr("构造"));
+    buildToolBar->addAction(compileAction);
+    buildToolBar->addAction(runAction);
 
     helpToolBar = addToolBar(tr("帮助"));
     helpToolBar->addAction(aboutAction);
@@ -204,6 +252,12 @@ void MainWindow::newFile()
     new Highlighter(editorNew->document());
     tabWidgetTop->addTab(editorNew, tabName);
     connect(editorNew, SIGNAL(textChanged()), editorNew, SLOT(textTopChangeTag()));
+    connect(undoAction, SIGNAL(triggered(bool)), editorNew, SLOT(undo()));
+    connect(redoAction, SIGNAL(triggered(bool)), editorNew, SLOT(redo()));
+    connect(cutAction, SIGNAL(triggered(bool)), editorNew, SLOT(cut()));
+    connect(pasteAction, SIGNAL(triggered(bool)), editorNew, SLOT(paste()));
+    connect(findAction, SIGNAL(triggered(bool)), editorNew, SLOT(findWindow()));
+    connect(replaceAction, SIGNAL(triggered(bool)), editorNew, SLOT(replaceWindow()));
     numTabTop++;
 }
 
@@ -295,10 +349,11 @@ void MainWindow::openFile()
         itemFile->setIcon(QIcon(":/images/right"));
         itemProject->setIcon(QIcon(":/images/down"));
         itemFile->setEditable(false);
-        itemProject->setEditable(false);
+        itemProject->setEditable(false);     
 
         itemProject->appendRow(itemFile);
         topItemLeft->appendRow(itemProject);
+
         //int position = fileName.lastIndexOf('/');
         //QString tabName = fileName.right(fileName.size() - position - 1);
 
@@ -343,7 +398,12 @@ void MainWindow::openFile()
                 out << '\n' << fileName;
             file.close();
         }
-
+        connect(undoAction, SIGNAL(triggered(bool)), editorNew, SLOT(undo()));
+        connect(redoAction, SIGNAL(triggered(bool)), editorNew, SLOT(redo()));
+        connect(cutAction, SIGNAL(triggered(bool)), editorNew, SLOT(cut()));
+        connect(pasteAction, SIGNAL(triggered(bool)), editorNew, SLOT(paste()));
+        connect(findAction, SIGNAL(triggered(bool)), editorNew, SLOT(findWindow()));
+        connect(replaceAction, SIGNAL(triggered(bool)), editorNew, SLOT(replaceWindow()));
     }
 }
 
@@ -366,16 +426,33 @@ void MainWindow::subMenu()
     {
         int i = 1;
         QTextStream out(&file);
+        QStringList store;
         while(!out.atEnd())
         {
+            store << out.readLine();
+            /*
             str = out.readLine();
             QAction *temp = new QAction(QIcon(":/images/add"), QString("%1 %2").arg(i).arg(str), this);
             temp->setStatusTip(str);
             recentMenu->addAction(temp);
             i++;
+            */
         }
         file.close();
+
+        int len = store.size();
+        while(i <= len)
+        {
+            QAction *temp = new QAction(QIcon(":/images/add"), QString("%1 %2").arg(i).arg(store[len - i]), this);
+            temp->setStatusTip(str);
+            recentMenu->addAction(temp);
+            i++;
+        }
     }
+    str = "清除历史";
+    QAction *clearHistory = new QAction(QIcon(":/images/clear"), str, this);
+    clearHistory->setStatusTip(str);
+    recentMenu->addAction(clearHistory);
 
     fileMenu->addMenu(recentMenu);
 
