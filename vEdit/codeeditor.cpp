@@ -1,7 +1,9 @@
 #include <QtWidgets>
 
 #include "codeeditor.h"
-
+#include "mainwindow.h"
+#include <QDebug>
+#include <QTabWidget>
 
 CodeEditor::CodeEditor(QWidget *parent) : QPlainTextEdit(parent)
 {
@@ -113,19 +115,5 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
         bottom = top + (int) blockBoundingRect(block).height();
         ++blockNumber;
     }
-}
-
-void CodeEditor::findWindow()
-{
-    find = new WindowToFind(this);
-    //find->setWindowModality(Qt::WindowModal);
-    find->show();
-}
-
-void CodeEditor::replaceWindow()
-{
-    replace = new WindowToReplace(this);
-    replace->setWindowModality(Qt::WindowModal);
-    replace->show();
 }
 

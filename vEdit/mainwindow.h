@@ -34,6 +34,8 @@ class QSplitter;
 class QTabWidget;
 class CodeEditor;
 class QStandardItem;
+class WindowToFind;
+class WindowToReplace;
 
 namespace Ui {
 class MainWindow;
@@ -82,10 +84,17 @@ private:
     // 中间：代码编辑器
     QTextEdit *textEdit;
     CodeEditor *codeeditor;
+public:
     QTabWidget *tabWidgetTop, *tabWidgetDown;
     int newTab;
 
     static int numTabTop;
+public:
+    static int currentTabIndex;
+private:
+    WindowToFind *find;
+    WindowToReplace *replace;
+
 
 private:
     void subMenu();
@@ -97,6 +106,12 @@ private slots:
     void saveAsFile();
     void tabCloseTop(int);
     void changeTab();
+    void findWindow();
+    void replaceWindow();
+    void pasteContext();
+    void undoContext();
+    void redoContext();
+    void cutContext();
 
 };
 

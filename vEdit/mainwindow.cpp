@@ -17,6 +17,7 @@
 #include "codeeditor.h"
 #include <QTextStream>
 #include <QFile>
+#include <QDebug>
 
 #include <QMessageBox>
 #include <QFileDialog>
@@ -26,8 +27,12 @@
 #include "taba.h"
 #include "tabb.h"
 #include "highlighter.h"
+#include "windowtofind.h"
+#include "windowtoreplace.h"
+#include <QPlainTextEdit>
 
 int MainWindow::numTabTop = 0;
+int MainWindow::currentTabIndex = 0;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -171,6 +176,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(treeViewLeft, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(changeTab()));
 
+    connect(findAction, SIGNAL(triggered(bool)), this, SLOT(findWindow()));
+    connect(replaceAction, SIGNAL(triggered(bool)), this, SLOT(replaceWindow()));
+    connect(pasteAction, SIGNAL(triggered(bool)), this, SLOT(pasteContext()));
+    connect(undoAction, SIGNAL(triggered(bool)), this, SLOT(undoContext()));
+    connect(redoAction, SIGNAL(triggered(bool)), this, SLOT(redoContext()));
+    connect(cutAction, SIGNAL(triggered(bool)), this, SLOT(cutContext()));
+
     // 中间布局 代码编辑器
     //textEdit = new QTextEdit(this);
     //textEdit->setText("我是第一行<br/>我是第二行");
@@ -236,6 +248,65 @@ MainWindow::MainWindow(QWidget *parent) :
     //this->setCentralWidget(widget);
 }
 
+void MainWindow::findWindow()
+{
+    if(tabWidgetTop->count()>0)
+    {
+        find = new WindowToFind(this);
+        find->show();
+    }
+}
+
+void MainWindow::replaceWindow()
+{
+    if(tabWidgetTop->count()>0)
+    {
+        replace = new WindowToReplace(this);
+        replace->show();
+    }
+}
+
+void MainWindow::pasteContext()
+{
+    if(tabWidgetTop->count()>0)
+    {
+        int index = tabWidgetTop->currentIndex();
+        QPlainTextEdit *temp = (QPlainTextEdit *)(tabWidgetTop->widget(index));
+        temp->paste();
+    }
+}
+
+void MainWindow::undoContext()
+{
+    if(tabWidgetTop->count()>0)
+    {
+        int index = tabWidgetTop->currentIndex();
+        QPlainTextEdit *temp = (QPlainTextEdit *)(tabWidgetTop->widget(index));
+        temp->undo();
+    }
+}
+
+
+void MainWindow::redoContext()
+{
+    if(tabWidgetTop->count()>0)
+    {
+        int index = tabWidgetTop->currentIndex();
+        QPlainTextEdit *temp = (QPlainTextEdit *)(tabWidgetTop->widget(index));
+        temp->redo();
+    }
+}
+
+void MainWindow::cutContext()
+{
+    if(tabWidgetTop->count()>0)
+    {
+        int index = tabWidgetTop->currentIndex();
+        QPlainTextEdit *temp = (QPlainTextEdit *)(tabWidgetTop->widget(index));
+        temp->cut();
+    }
+}
+
 void MainWindow::newFile()
 {
     newTab = 0;
@@ -251,13 +322,15 @@ void MainWindow::newFile()
     editorNew->setFont(font);
     new Highlighter(editorNew->document());
     tabWidgetTop->addTab(editorNew, tabName);
+    tabWidgetTop->setCurrentIndex(numTabTop);
+    currentTabIndex = numTabTop;
     connect(editorNew, SIGNAL(textChanged()), editorNew, SLOT(textTopChangeTag()));
-    connect(undoAction, SIGNAL(triggered(bool)), editorNew, SLOT(undo()));
-    connect(redoAction, SIGNAL(triggered(bool)), editorNew, SLOT(redo()));
-    connect(cutAction, SIGNAL(triggered(bool)), editorNew, SLOT(cut()));
-    connect(pasteAction, SIGNAL(triggered(bool)), editorNew, SLOT(paste()));
-    connect(findAction, SIGNAL(triggered(bool)), editorNew, SLOT(findWindow()));
-    connect(replaceAction, SIGNAL(triggered(bool)), editorNew, SLOT(replaceWindow()));
+    //connect(undoAction, SIGNAL(triggered(bool)), editorNew, SLOT(undo()));
+    //connect(redoAction, SIGNAL(triggered(bool)), editorNew, SLOT(redo()));
+    //connect(cutAction, SIGNAL(triggered(bool)), editorNew, SLOT(cut()));
+    //connect(pasteAction, SIGNAL(triggered(bool)), editorNew, SLOT(paste()));
+    //connect(findAction, SIGNAL(triggered(bool)), tabWidgetTop->widget(numTabTop), SLOT(findWindow()));
+    //connect(replaceAction, SIGNAL(triggered(bool)), editorNew, SLOT(replaceWindow()));
     numTabTop++;
 }
 
@@ -398,12 +471,12 @@ void MainWindow::openFile()
                 out << '\n' << fileName;
             file.close();
         }
-        connect(undoAction, SIGNAL(triggered(bool)), editorNew, SLOT(undo()));
-        connect(redoAction, SIGNAL(triggered(bool)), editorNew, SLOT(redo()));
-        connect(cutAction, SIGNAL(triggered(bool)), editorNew, SLOT(cut()));
-        connect(pasteAction, SIGNAL(triggered(bool)), editorNew, SLOT(paste()));
-        connect(findAction, SIGNAL(triggered(bool)), editorNew, SLOT(findWindow()));
-        connect(replaceAction, SIGNAL(triggered(bool)), editorNew, SLOT(replaceWindow()));
+        //connect(undoAction, SIGNAL(triggered(bool)), editorNew, SLOT(undo()));
+        //connect(redoAction, SIGNAL(triggered(bool)), editorNew, SLOT(redo()));
+        //connect(cutAction, SIGNAL(triggered(bool)), editorNew, SLOT(cut()));
+        //connect(pasteAction, SIGNAL(triggered(bool)), editorNew, SLOT(paste()));
+       // connect(findAction, SIGNAL(triggered(bool)), editorNew, SLOT(findWindow()));
+        //connect(replaceAction, SIGNAL(triggered(bool)), editorNew, SLOT(replaceWindow()));
     }
 }
 

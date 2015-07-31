@@ -32,18 +32,12 @@ private slots:
     void highlightCurrentLine();
     void updateLineNumberArea(const QRect &, int);
     void textTopChangeTag();
-    void findWindow();
-    void replaceWindow();
 
 private:
     QWidget *lineNumberArea;
-    WindowToFind *find;
-    WindowToReplace *replace;
-
 
 public:
     int everChanged;
-
 };
 
 
