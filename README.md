@@ -4,4 +4,4 @@ Best wish to myself and have a nice trip.
 
 # screenshots
 
-![image](https://github.com/vsimple/vEdit/edit/master/screenshots/vEdit.png)
+![image](https://github.com/vsimple/vEdit/master/screenshots/vEdit.png)
